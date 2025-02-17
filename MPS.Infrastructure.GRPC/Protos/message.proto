@@ -1,6 +1,6 @@
 ﻿syntax = "proto3";
 
-option csharp_namespace = "MessageService";
+option csharp_namespace = "MPS.Infrastructure.GRPC";
 
 // Service for MessageRouterSystem
 service MessageRouterService {

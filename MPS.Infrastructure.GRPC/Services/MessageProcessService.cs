@@ -1,21 +1,27 @@
-﻿using Grpc.Core;
-using MessageService;
-
-public class MessageProcessService : MessageProcessService.MessageProcessServiceBase
+﻿namespace MPS.Infrastructure.GRPC.Services
 {
-    public override Task<ValidationResponse> ValidateMessage(MessageRequest request, ServerCallContext context)
+    using Grpc.Core;
+
+    public class MessageProcessService : MessageProcessService.MessageProcessServiceBase
     {
-        // اعتبارسنجی پیام (مثال: بررسی طول پیام)
-        bool isValid = !string.IsNullOrEmpty(request.MessageText) && request.MessageText.Length <= 100;
-
-        // ایجاد پاسخ
-        var response = new ValidationResponse
+        public override async Task ValidateMessageStream(
+            IAsyncStreamReader<MessageRequest> requestStream,
+            IServerStreamWriter<ValidationResponse> responseStream,
+            ServerCallContext context)
         {
-            Id = request.Id,
-            IsValid = isValid,
-            ValidationMessage = isValid ? "Message is valid." : "Message is invalid."
-        };
+            await foreach (var request in requestStream.ReadAllAsync())
+            {
+                bool isValid = !string.IsNullOrEmpty(request.MessageText) && request.MessageText.Length <= 100;
 
-        return Task.FromResult(response);
+                var response = new ValidationResponse
+                {
+                    Id = request.Id,
+                    IsValid = isValid,
+                    ValidationMessage = isValid ? "Message is valid." : "Message is invalid."
+                };
+
+                await responseStream.WriteAsync(response);
+            }
+        }
     }
 }
