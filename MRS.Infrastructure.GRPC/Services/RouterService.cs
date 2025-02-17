@@ -1,15 +1,23 @@
 ﻿using Grpc.Core;
+using MRS.Application;
 
 namespace MRS.Infrastructure.GRPC.Services
 {
     public class RouterService : ProcessInputMessage.ProcessInputMessageBase
     {
 
+        public RouterService()
+        {
+            
+        }
+
+
         public override async Task Introduce(
             IAsyncStreamReader<SendInputMessage> requestStream,
             IServerStreamWriter<GetResultMessage> responseStream,
             ServerCallContext context)
         {
+
             while (await requestStream.MoveNext(context.CancellationToken))
             {
                 var inputMessage = requestStream.Current;

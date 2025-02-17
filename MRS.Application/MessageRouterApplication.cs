@@ -30,7 +30,7 @@ namespace MRS.Application
             _timer.Stop();
             _timer.Dispose();
         }
-        public void CreateMessage()
+        public Message CreateMessage()
         {
             var message = new Message(
                 primaryId: GenerateSystemGuid(),
@@ -40,6 +40,8 @@ namespace MRS.Application
 
             _logger.LogInformation($"messageCreatedBy {message.PrimaryId} -> sender : {message.Sender} , messageText : {message.MessageText} ");
             //Console.WriteLine($"primaryId = {message.PrimaryId} , sender = {message.Sender} , messageText = {message.MessageText}");
+
+            return message;
         }
         private Guid GenerateSystemGuid()
         {

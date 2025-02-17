@@ -1,6 +1,8 @@
-﻿namespace MPS.Application
+﻿using MPS.Domian.Interfaces;
+
+namespace MPS.Application
 {
-    public class MessageProcessApplication
+    public class MessageProcessApplication : IMessageProcessApplication
     {
     }
 }

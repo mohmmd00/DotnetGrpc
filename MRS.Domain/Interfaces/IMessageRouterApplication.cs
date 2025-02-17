@@ -1,8 +1,9 @@
-﻿namespace MRS.Domain.Interfaces
+﻿using MRS.Domain.Entities;
+
+namespace MRS.Domain.Interfaces
 {
     public interface IMessageRouterApplication
     {
-        void CreateMessage();
-
+        Message CreateMessage();
     }
 }

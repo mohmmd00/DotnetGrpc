@@ -7,11 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\MessageRouter.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\Message.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.67.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.69.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MRS.Application\MRS.Application.csproj" />
   </ItemGroup>
 
 </Project>
