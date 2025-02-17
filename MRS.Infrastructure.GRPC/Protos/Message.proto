@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option csharp_namespace = "MRS.Infrastructure.GRPC";
+
+package Message;
+
+message SendInputMessage
+{
+	string id =1;
+	string sender =2;
+	string textmessage =3;
+}
+message GetResultMessage
+{
+	string id =1;
+	string engine =2 ;
+	uint32 messagelength = 3;
+	bool isvalid =4;
+}
+
+service ProcessInputMessage{
+	rpc Introduce(stream SendInputMessage) returns (stream GetResultMessage);
+}
+/*
+service FetchResultMessage
+{
+	rpc Introduce (stream GetResultMessage) returns (stream SendInputMessage)
+}
+*/
