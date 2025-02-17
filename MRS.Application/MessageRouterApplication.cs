@@ -11,10 +11,10 @@ namespace MRS.Application
     public class MessageRouterApplication : IMessageRouterApplication
     {
         private readonly System.Timers.Timer _timer;
-        private readonly ILogger<MessageRouterApplication>/*add message application as object of this logger*/ _logger;
-        public MessageRouterApplication(ILogger<MessageRouterApplication> logger)
+        private readonly ILoggingService _loggingService;
+        public MessageRouterApplication(ILoggingService loggingService)
         {
-            _logger = logger;
+            _loggingService = loggingService;
             _timer = new System.Timers.Timer(200);
             _timer.AutoReset = true;
             _timer.Elapsed += OnTimedEvent;
@@ -36,11 +36,7 @@ namespace MRS.Application
                 primaryId: GenerateSystemGuid(),
                 sender: GenerateRandomString(10), // 10 charachters long !!!
                 messageText: GenerateRandomString(20));
-
-
-            _logger.LogInformation($"messageCreatedBy {message.PrimaryId} -> sender : {message.Sender} , messageText : {message.MessageText} ");
-            //Console.WriteLine($"primaryId = {message.PrimaryId} , sender = {message.Sender} , messageText = {message.MessageText}");
-
+            _loggingService.LogMessageCreation(message.PrimaryId, message.Sender, message.MessageText);
             return message;
         }
         private Guid GenerateSystemGuid()
