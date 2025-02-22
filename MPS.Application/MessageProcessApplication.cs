@@ -6,22 +6,34 @@ namespace MPS.Application
 {
     public class MessageProcessApplication : IMessageProcessApplication
     {
-        public MessageValidationResult ProcessMessageAsync(MessageInput message)
-        {
-            var regexMatches = new Dictionary<string, bool>
-            {
-                { "HasDigits", Regex.IsMatch(message.MessageText, @"\d") },
-                { "HasUppercase", Regex.IsMatch(message.MessageText, @"[A-Z]") }
-            };
-            var messageLength = message.MessageText.Length;
+        private readonly IProcessLoggingService _loggingService;
 
-            var result = new MessageValidationResult()
+        public MessageProcessApplication(IProcessLoggingService loggingService)
+        {
+            _loggingService = loggingService;
+        }
+        public MPSProcessedMessage ProcessMessage(MPSMessage message)
+        {
+
+            // Perform regex validation and collect detailed results
+            var regexDetails = new Dictionary<string, string>
+            {
+                { "HasDigits", Regex.IsMatch(message.MessageText, @"\d") ? "Valid" : "No digits found" },
+                { "HasUppercase", Regex.IsMatch(message.MessageText, @"[A-Z]") ? "Valid" : "No uppercase letters found" }
+            };
+
+            // Determine if the message is valid based on all checks
+            var isValid = regexDetails.Values.All(result => result == "Valid");
+
+            // Create the processed message
+            var result = new MPSProcessedMessage
             {
                 MessageId = message.PrimaryId,
                 EngineType = "RegexEngine",
-                MessageLength = messageLength,
-                IsValid = true,
-                AdditionalFields = regexMatches
+                MessageLength = message.MessageText.Length,
+                IsValid = isValid,
+                RegexFilter = regexDetails,
+
             };
 
             return result;

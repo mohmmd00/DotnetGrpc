@@ -4,6 +4,6 @@ namespace MPS.Domian.Interfaces
 {
     public interface IMessageProcessApplication
     {
-        MessageValidationResult ProcessMessageAsync(MessageInput message);
+        MPSProcessedMessage ProcessMessage(MPSMessage message);
     }
 }

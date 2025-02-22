@@ -1,8 +1,6 @@
 ﻿using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
-using System.Timers;
-using Microsoft.Extensions.Logging;
 using MRS.Domain.Entities;
 using MRS.Domain.Interfaces;
 
@@ -10,62 +8,67 @@ namespace MRS.Application
 {
     public class MessageRouterApplication : IMessageRouterApplication
     {
-        private readonly System.Timers.Timer _timer;
-        private readonly ILoggingService _loggingService;
-        public MessageRouterApplication(ILoggingService loggingService)
+        private readonly IRouterLoggingService _loggingService;
+        public MessageRouterApplication(IRouterLoggingService loggingService)
         {
             _loggingService = loggingService;
-            _timer = new System.Timers.Timer(200);
-            _timer.AutoReset = true;
-            _timer.Elapsed += OnTimedEvent;
-            _timer.Start();
+        }
 
-        }
-        public void OnTimedEvent(object? source, ElapsedEventArgs e)
+        public MRSMessage CreateMessage()
         {
-            CreateMessage();
-        }
-        public void StopTimer()
-        {
-            _timer.Stop();
-            _timer.Dispose();
-        }
-        public Message CreateMessage()
-        {
-            var message = new Message(
-                primaryId: GenerateSystemGuid(),
-                sender: GenerateRandomString(10), // 10 charachters long !!!
-                messageText: GenerateRandomString(20));
-            _loggingService.LogMessageCreation(message.PrimaryId, message.Sender, message.MessageText);
+            Random random = new();
+            //var message = new MRSMessage(
+            //    primaryId: GenerateSystemGuid().ToString(),
+            //    sender: GenerateRandomString(10), // 10 characters long
+            //    messageText: GenerateRandomString(25));
+            var randomId = GenerateSystemGuid().ToString();
+            var randomText = GenerateRandomString(random.Next(6 ,25));
+            var randomSender = GenerateRandomString(random.Next(5 ,14));
+
+            var message = new MRSMessage(primaryId: randomId, sender: randomSender, messageText: randomText);
+
             return message;
         }
+
+        #region Creation of Random message
         private Guid GenerateSystemGuid()
         {
             string macAddress = GetMacAddress();
-            using (SHA256 sha256 = SHA256.Create()) /* using Cryptography for creating a new crypted!!! for id using macaddress*/
+            using (SHA256 sha256 = SHA256.Create()) // Use cryptography to create a hashed ID based on the MAC address
             {
-                byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(macAddress)/*turned maccaddress to bytes then hash it then put it into buyr[] hash*/);
-
-                /*SHA-256 generates a 32-byte hash so we need to put it into 16 bytes because guid only gets 16-bytes !!!! very important */
-                byte[] guidBytes = new byte[16];
+                byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(macAddress)); // Convert MAC address to bytes and hash it
+                byte[] guidBytes = new byte[16]; // SHA-256 generates a 32-byte hash, so we take the first 16 bytes for a GUID
                 Array.Copy(hash, guidBytes, 16);
-
                 return new Guid(guidBytes);
             }
         }
         private string GetMacAddress()
         {
-            return NetworkInterface.GetAllNetworkInterfaces()/*get all network adapeters*/
-                .Where(n => n.OperationalStatus == OperationalStatus.Up)/*find all of network adapters that are up and running*/
-                    .Select(n => n.GetPhysicalAddress().ToString())/*select that specific network adapter's physical address then turned into string(without '-')*/
-                        .FirstOrDefault() ?? "000000000000";/*get the first mac address*/
+            return NetworkInterface.GetAllNetworkInterfaces() // Get all network adapters
+                .Where(n => n.OperationalStatus == OperationalStatus.Up) // Filter for active interfaces
+                .Select(n => n.GetPhysicalAddress().ToString()) // Extract the MAC address as a string
+                .FirstOrDefault() ?? "000000000000"; // Default value if no MAC address is found
         }
         private string GenerateRandomString(int length)
         {
-            const string Allchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";/*all hte charecters */
+            const string AllChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; // Character set for random strings
             Random random = new();
-            return new string/*covert array to string*/(Enumerable.Repeat(Allchars, length)/*stick some chars toghethter length! times*/
-                   .Select(s => s[random.Next(s.Length)])/*Selects a random character from chars length times*/.ToArray()) /*stick legth chars toghether */;
+            return new string( // Convert array to string
+                Enumerable.Repeat(AllChars, length) // Repeat the character set 'length' times
+                .Select(s => s[random.Next(s.Length)]) // Select a random character from the set
+                .ToArray()); // Combine the selected characters into an array
         }
+        #endregion
+
+
+        public void LogReceivedMessage(MRSMessage message)
+        {
+            _loggingService.MessageSentToLog(message.PrimaryId, message.Sender, message.MessageText);
+        }
+        public void LogReceivedProcessedMessage(MRSProcessedMessage message)
+        {
+            _loggingService.MessageReceivedToLog(message.MessageId, message.EngineType, message.IsValid, message.MessageLength);
+        }
+
     }
 }

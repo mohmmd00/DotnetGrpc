@@ -1,25 +1,23 @@
 syntax = "proto3";
 
 option csharp_namespace = "Common.Proto";
+import "google/protobuf/empty.proto";
 
 service MessageExchange {
-    rpc SendToProcess (ProtoMessage) returns (ProcessingResult);
-    rpc ReceiveProcessingResult (ProcessingResult) returns (EmptyMessageByDefault);
+    rpc SendDefaultMessage (google.protobuf.Empty) returns (MessageFromproto);
+    rpc ReceiveProcessedMessage (ProcessedMessageFromproto) returns (google.protobuf.Empty);
 }
 
-message ProtoMessage {
+message MessageFromproto {
     string primaryId = 1;
     string sender = 2;    
     string messageText = 3; 
 }
 
-message ProcessingResult {
+message ProcessedMessageFromproto {
     string messageId = 1;
     bool isValid = 2;     
     string engineType = 3; 
     int32 messageLength = 4; 
     map<string, string> regexFilter = 5;
 }
-
-
-message EmptyMessageByDefault {}

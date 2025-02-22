@@ -1,14 +1,12 @@
-﻿namespace MPS.Domian.Entities
+﻿namespace MRS.Domain.Entities
 {
-    public class MessageValidationResult
+    public class MRSProcessedMessage
     {
-
-        public Guid MessageId { get; set; } // ID of the validated message
+        public string? MessageId { get; set; } // ID of the validated message
         public string? EngineType { get; set; } // Type of validation engine used (e.g., RegexEngine)
         public int MessageLength { get; set; } // Length of the message text
         public bool IsValid { get; set; } // Validation status
-        public Dictionary<string, bool>? AdditionalFields { get; set; } // Additional validation details
-
+        public Dictionary<string, string>? RegexFilter { get; set; } // Additional validation details
 
     }
 }

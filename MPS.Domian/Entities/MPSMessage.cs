@@ -1,12 +1,12 @@
 ﻿namespace MPS.Domian.Entities
 {
-    public class MessageInput
+    public class MPSMessage
     {
-        public Guid PrimaryId { get; set; }
+        public string? PrimaryId { get; set; }
         public string? Sender { get; set; }
         public string? MessageText { get; set; }
 
-        public MessageInput(Guid primaryId, string sender, string messageText)
+        public MPSMessage(string primaryId, string sender, string messageText)
         {
             PrimaryId = primaryId;
             Sender = sender;
