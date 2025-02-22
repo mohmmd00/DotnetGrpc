@@ -17,10 +17,6 @@ namespace MRS.Application
         public MRSMessage CreateMessage()
         {
             Random random = new();
-            //var message = new MRSMessage(
-            //    primaryId: GenerateSystemGuid().ToString(),
-            //    sender: GenerateRandomString(10), // 10 characters long
-            //    messageText: GenerateRandomString(25));
             var randomId = GenerateSystemGuid().ToString();
             var randomText = GenerateRandomString(random.Next(6 ,25));
             var randomSender = GenerateRandomString(random.Next(5 ,14));
