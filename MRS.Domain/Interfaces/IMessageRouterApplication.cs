@@ -5,7 +5,8 @@ namespace MRS.Domain.Interfaces
     public interface IMessageRouterApplication
     {
         MRSMessage CreateMessage();
-        void LogReceivedMessage(MRSMessage message);
+        MRSHealthMessage CreateHealthMessage();
+        void LogSendMessage(MRSMessage message);
         void LogReceivedProcessedMessage(MRSProcessedMessage message);
 
     }
