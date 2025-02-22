@@ -14,7 +14,9 @@ namespace MRS.Application
 
         public void MessageSentToLog(string? primaryId, string? sender, string? messageText)
         {
-            _logger.LogInformation($"Message Sent to Client:\n\tPrimaryId -> {primaryId}\n\tSender -> {sender}\n\tMessageText -> {messageText}");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"Message Sent to Client:\n\tPrimaryId -> {primaryId}\n\tSender -> {sender}\n\tMessageText -> {messageText}");
+            Console.ResetColor();
         }
         public void MessageReceivedToLog(string? primaryId, string? engineType, bool isValid, int messageLength)
         {

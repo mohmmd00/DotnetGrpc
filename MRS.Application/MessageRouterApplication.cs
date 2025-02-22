@@ -29,6 +29,12 @@ namespace MRS.Application
 
             return message;
         }
+        public MRSHealthMessage CreateHealthMessage()
+        {
+            var randomId = GenerateSystemGuid().ToString();
+            var newHealthMessage = new MRSHealthMessage(primaryId: randomId);
+            return newHealthMessage;
+        }
 
         #region Creation of Random message
         private Guid GenerateSystemGuid()
@@ -61,7 +67,7 @@ namespace MRS.Application
         #endregion
 
 
-        public void LogReceivedMessage(MRSMessage message)
+        public void LogSendMessage(MRSMessage message)
         {
             _loggingService.MessageSentToLog(message.PrimaryId, message.Sender, message.MessageText);
         }
