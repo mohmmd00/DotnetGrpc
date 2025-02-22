@@ -18,7 +18,17 @@ namespace MRS.Application
         }
         public void MessageReceivedToLog(string? primaryId, string? engineType, bool isValid, int messageLength)
         {
-            _logger.LogInformation($"Message Received from Client:\n\tPrimaryId -> {primaryId}\n\tMessageLength -> {messageLength}\n\tEngineType -> {engineType}\n\tIsValid -> {isValid}");
+            primaryId ??= "Unknown"; // Use "Unknown" if primaryId is null
+            engineType ??= "Unknown"; // Use "Unknown" if engineType is null
+
+            if (isValid) // Simplified condition (no need for == true)
+            {
+                _logger.LogInformation($"Message Received from Client:\n\tPrimaryId -> {primaryId}\n\tMessageLength -> {messageLength}\n\tEngineType -> {engineType}\n\tIsValid -> {isValid}");
+            }
+            else
+            {
+                _logger.LogWarning($"Message Received from Client:\n\tPrimaryId -> {primaryId}\n\tMessageLength -> {messageLength}\n\tEngineType -> {engineType}\n\tIsValid -> {isValid}");
+            }
         }
     }
 }

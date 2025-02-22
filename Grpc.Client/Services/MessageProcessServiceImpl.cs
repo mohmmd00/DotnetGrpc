@@ -1,10 +1,9 @@
 ﻿using Common.Proto;
 using Google.Protobuf.WellKnownTypes;
-using Grpc.Client;
 using MPS.Domian.Entities;
 using MPS.Domian.Interfaces;
 
-namespace MPS.Infrastructure.Grpc.Client
+namespace Grpc.Client.Services
 {
     public class MessageProcessServiceImpl : MessageExchange.MessageExchangeClient, IMessageProcessServiceImpl
     {
@@ -26,7 +25,7 @@ namespace MPS.Infrastructure.Grpc.Client
             var receivedmessage = _client.SendDefaultMessage(Nothing);
 
 
-            MPSMessage mPSMessage = new MPSMessage(receivedmessage.PrimaryId , receivedmessage.Sender , receivedmessage.MessageText);
+            MPSMessage mPSMessage = new MPSMessage(receivedmessage.PrimaryId, receivedmessage.Sender, receivedmessage.MessageText);
             return mPSMessage;
         }
         public ProcessedMessageFromproto SendProcessedMessageAsync(MPSMessage mpsMessage)

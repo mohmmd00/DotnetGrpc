@@ -19,7 +19,9 @@ namespace MPS.Application
             var regexDetails = new Dictionary<string, string>
             {
                 { "HasDigits", Regex.IsMatch(message.MessageText, @"\d") ? "Valid" : "No digits found" },
-                { "HasUppercase", Regex.IsMatch(message.MessageText, @"[A-Z]") ? "Valid" : "No uppercase letters found" }
+                { "HasUppercase", Regex.IsMatch(message.MessageText, @"[A-Z]") ? "Valid" : "No uppercase letters found" },
+                { "HasSpecialCharacter", !Regex.IsMatch(message.MessageText, @"[!@#$%^&*(),.?""{}|<>]") ? "Valid" : "No special characters found" },
+                { "MinimumLength", message.MessageText.Length > 8 ? "Valid" : "Message is too short (minimum 8 characters required)" }
             };
 
             // Determine if the message is valid based on all checks
