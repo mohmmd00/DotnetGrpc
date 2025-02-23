@@ -1,0 +1,6 @@
+@MMS.Infrastructure.WebApi_HostAddress = http://localhost:5085
+
+GET {{MMS.Infrastructure.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

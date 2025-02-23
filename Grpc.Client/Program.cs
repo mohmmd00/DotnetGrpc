@@ -1,13 +1,10 @@
-﻿using Grpc.Net.Client;
-using Common.Proto;
+﻿using Common.Proto;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using MPS.Application;
 using Grpc.Core;
-using System.Threading.Tasks;
 using MPS.Domian.Interfaces;
 using Grpc.Client.Services;
-using System.Threading;
 
 class Program
 {

@@ -2,8 +2,8 @@
 {
     public interface IRouterLoggingService
     {
-        void MessageSentToLog(string primaryId, string? sender, string? messageText);
-        void MessageReceivedToLog(string primaryId, string engineType, bool isValid, int messageLength);
+        void MessageSentToLog(string? primaryId, string? sender, string? messageText);
+        void MessageReceivedToLog(string? primaryId, string? engineType, bool isValid, int? messageLength);
 
     }
 }

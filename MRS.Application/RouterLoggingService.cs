@@ -18,7 +18,7 @@ namespace MRS.Application
             Console.WriteLine($"Message Sent to Client:\n\tPrimaryId -> {primaryId}\n\tSender -> {sender}\n\tMessageText -> {messageText}");
             Console.ResetColor();
         }
-        public void MessageReceivedToLog(string? primaryId, string? engineType, bool isValid, int messageLength)
+        public void MessageReceivedToLog(string? primaryId, string? engineType, bool isValid, int? messageLength)
         {
             primaryId ??= "Unknown"; // Use "Unknown" if primaryId is null
             engineType ??= "Unknown"; // Use "Unknown" if engineType is null

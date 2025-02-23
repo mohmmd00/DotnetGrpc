@@ -12,10 +12,11 @@ namespace MRS.Infrastructure.Grpc
             
             
             builder.Services.AddGrpc();
-
+            builder.Services.AddHttpClient();
             // Add services to the container.
             builder.Services.AddScoped<IRouterLoggingService, RouterLoggingService>();
             builder.Services.AddScoped<IMessageRouterApplication, MessageRouterApplication>();
+            builder.Services.AddHostedService<HealthMessageSender>();
 
 
             var app = builder.Build();

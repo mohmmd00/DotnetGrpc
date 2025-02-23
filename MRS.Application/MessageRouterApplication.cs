@@ -65,7 +65,7 @@ namespace MRS.Application
 
         public void LogSendMessage(MRSMessage message)
         {
-            _loggingService.MessageSentToLog(message.PrimaryId, message.Sender, message.MessageText);
+            _loggingService.MessageSentToLog(message?.PrimaryId, message?.Sender, message?.MessageText);
         }
         public void LogReceivedProcessedMessage(MRSProcessedMessage message)
         {

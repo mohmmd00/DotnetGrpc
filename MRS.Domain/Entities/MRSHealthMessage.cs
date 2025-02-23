@@ -2,13 +2,13 @@
 {
     public class MRSHealthMessage
     {
-        string? PrimaryId { get; set; }
-        DateTime CurrentTime { get; set; }
+        public string? PrimaryId { get; set; }
+        public string? CurrentTime { get; set; }
 
         public MRSHealthMessage(string primaryId)
         {
             PrimaryId = primaryId;
-            CurrentTime = DateTime.Now;
+            CurrentTime = DateTime.Now.ToString();
         }
     }
 }
