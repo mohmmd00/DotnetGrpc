@@ -22,7 +22,6 @@ class Program
 
         // Register services for dependency injection
         // These services will be used throughout the application :)
-        builder.Services.AddTransient<IProcessLoggingService, ProcessLoggingService>();
         builder.Services.AddTransient<IMessageProcessApplication, MessageProcessApplication>();
         builder.Services.AddTransient<IMessageProcessServiceImpl, MessageProcessServiceImpl>();
 
@@ -33,7 +32,7 @@ class Program
         var messageService = provider.GetRequiredService<IMessageProcessServiceImpl>();
 
         // Create a cancellation token source to handle graceful shutdown (e.g., Ctrl+C)
-        using var cts = new CancellationTokenSource(); //with cntrl + c you can stop the program
+        var cts = new CancellationTokenSource(); //with cntrl + c you can stop the program
 
         // Register an event handler for Ctrl+C to cancel the operation
         Console.CancelKeyPress += (sender, eventArgs) =>
@@ -67,16 +66,11 @@ class Program
                     // Wait for 300ms before sending the next request
                     await Task.Delay(300, cts.Token); // wait 300 ms afgetr sending another
                 }
-                catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-                {
-                    // Handle cancellation specifically (e.g., if the server cancels the request)
-                    Console.WriteLine("Request was cancelled.");
-                }
                 catch (RpcException ex)
                 {
                     // Handle gRPC-specific errors (e.g., server unavailable, network issues)
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"gRPC Error: {ex.Status.Detail}");
+                    Console.WriteLine($"{DateTime.Now:HH:mm:ss} - gRPC Error: {ex.Status.Detail}");
                     Console.ResetColor();
                     await Task.Delay(5000, cts.Token); // Wait 5 seconds before retrying
                 }
@@ -84,7 +78,7 @@ class Program
                 {
                     // Handle any other unexpected errors
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"General Error: {ex.Message}");
+                    Console.WriteLine($"{DateTime.Now:HH:mm:ss} - General Error: {ex.Message}");
                     Console.ResetColor();
                     await Task.Delay(5000, cts.Token); // Wait 5 secondss before retrying
                 }

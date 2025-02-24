@@ -1,11 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Text.Json;
+using MRS.Domain.Interfaces;
 
-public class HealthMessageSender : BackgroundService
+public class HealthMessageSender : BackgroundService /*component to use in background tasks without user intraction*/
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IHttpClientFactory _clientFactory;
@@ -25,7 +21,15 @@ public class HealthMessageSender : BackgroundService
                 // Create a new scope to resolve scoped services
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var routerApplication = scope.ServiceProvider.GetRequiredService<MRS.Domain.Interfaces.IMessageRouterApplication>();
+                    // Create an HttpClient instance using IHttpClientFactory
+                    var httpClient = _clientFactory.CreateClient(); // Properly use IHttpClientFactory here
+                    httpClient.BaseAddress = new Uri("https://localhost:7128/"); // Set BaseAddress explicitly to match webapi 
+
+
+
+
+
+                    var routerApplication = scope.ServiceProvider.GetRequiredService<IMessageRouterApplication>();
 
                     // Call business logic to create a health message
                     var result = routerApplication.CreateHealthMessage();
@@ -40,15 +44,14 @@ public class HealthMessageSender : BackgroundService
                     // Convert the data to JSON and send it as the body of the POST request
                     var content = new StringContent(JsonSerializer.Serialize(postData), System.Text.Encoding.UTF8, "application/json");
 
-                    // Create an HttpClient instance using IHttpClientFactory
-                    var httpClient = _clientFactory.CreateClient(); // Properly use IHttpClientFactory here
-                    httpClient.BaseAddress = new Uri("https://localhost:7128/"); // Set BaseAddress explicitly
+
 
                     // Make an HTTP POST request to the Web API
                     var apiResponse = await httpClient.PostAsync("api/health", content);
                     apiResponse.EnsureSuccessStatusCode(); // Throw exception if the request fails
-
-                    Console.WriteLine($"Health message sent to Web API at {DateTime.UtcNow}");
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.WriteLine($"\nHealth message sent to Web API at {DateTime.UtcNow}\n");
+                    Console.ResetColor();
                 }
             }
             catch (Exception ex)
