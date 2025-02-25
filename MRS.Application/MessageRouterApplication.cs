@@ -8,11 +8,6 @@ namespace MRS.Application
 {
     public class MessageRouterApplication : IMessageRouterApplication
     {
-        private readonly IRouterLoggingService _loggingService;
-        public MessageRouterApplication(IRouterLoggingService loggingService)
-        {
-            _loggingService = loggingService;
-        }
 
         public MRSMessage CreateMessage()
         {
@@ -61,16 +56,6 @@ namespace MRS.Application
                 .ToArray()); // Combine the selected characters into an array
         }
         #endregion
-
-
-        public void LogSendMessage(MRSMessage message)
-        {
-            _loggingService.MessageSentToLog(message?.PrimaryId, message?.Sender, message?.MessageText);
-        }
-        public void LogReceivedProcessedMessage(MRSProcessedMessage message)
-        {
-            _loggingService.MessageReceivedToLog(message.MessageId, message.EngineType, message.IsValid, message.MessageLength);
-        }
 
     }
 }

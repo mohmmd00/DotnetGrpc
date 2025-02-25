@@ -6,8 +6,6 @@ namespace MRS.Domain.Interfaces
     {
         MRSMessage CreateMessage();
         MRSHealthMessage CreateHealthMessage();
-        void LogSendMessage(MRSMessage message);
-        void LogReceivedProcessedMessage(MRSProcessedMessage message);
 
     }
 }

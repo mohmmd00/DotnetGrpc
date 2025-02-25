@@ -1,4 +1,6 @@
 
+using Framework_0.CustomLoggingService;
+
 namespace MMS.Infrastructure.WebApi
 {
     public class Program
@@ -8,6 +10,8 @@ namespace MMS.Infrastructure.WebApi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddTransient<ILoggingService, LoggingService>();
+            ////builder.Services.AddScoped<MessageRouterServiceImpl>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

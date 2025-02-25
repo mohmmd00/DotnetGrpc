@@ -3,30 +3,45 @@ using Common.Proto;
 using MRS.Domain.Entities;
 using MRS.Domain.Interfaces;
 using Google.Protobuf.WellKnownTypes;
-using System.Text.Json;
+using Framework_0.CustomLoggingService;
+using System;
+using System.Collections.Concurrent;
 
 namespace MRS.Infrastructure.Grpc.Services
 {
-    public class MessageRouterServiceImpl : MessageExchange.MessageExchangeBase
+    public class MessageRouterServiceImpl : MessageExchange.MessageExchangeBase, IMessageRouterServiceImpl
     {
         private readonly IMessageRouterApplication _routerApplication;
         private readonly HttpClient _httpClient;
-        //private readonly MessageExchange.MessageExchangeBase _server;
+        private readonly ILoggingService _loggingService;
 
-        public MessageRouterServiceImpl(IMessageRouterApplication application, HttpClient httpClient)
+
+
+
+
+
+        public ConcurrentDictionary<string, DateTime> ListOfActiveClients = new();
+
+
+
+
+
+
+        public MessageRouterServiceImpl(IMessageRouterApplication application, HttpClient httpClient, ILoggingService loggingService)
         {
             _routerApplication = application;
             _httpClient = httpClient;
             _httpClient.BaseAddress = new Uri("https://localhost:7128");
+            _loggingService = loggingService;
         }
+
         public override Task<MessageFromproto> SendDefaultMessage(Empty request, ServerCallContext context)
         {
-            // Call business logic asynchronously
             var result = _routerApplication.CreateMessage();
-            _routerApplication.LogSendMessage(result); //make log in server side -- created message before sending to client side 
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"Message Sent to Client:\n\tPrimaryId -> {result.PrimaryId}\n\tSender -> {result.Sender}\n\tMessageText -> {result.MessageText}");
+            Console.ResetColor();
 
-
-            // Map the result to the protocol buffer message
             return Task.FromResult(new MessageFromproto
             {
                 PrimaryId = result.PrimaryId,
@@ -43,32 +58,43 @@ namespace MRS.Infrastructure.Grpc.Services
                 EngineType = message.EngineType,
                 IsValid = message.IsValid,
                 MessageLength = message.MessageLength
-
             };
-            _routerApplication.LogReceivedProcessedMessage(processed); // make log in server side -- received processed message after processing in client side 
+            _loggingService.ProcessedMessageReceivedFromProcessByRouterToLog(processed.MessageId, processed.EngineType, processed.IsValid, processed.MessageLength);
 
             return Task.FromResult(new Empty());
         }
 
-        public override Task<HealthMessageFromProto> SendHealthMessage(Empty request, ServerCallContext context)
+        public ConcurrentDictionary<string, DateTime> GetActiveClients()
         {
-            try
-            {
-                // Call business logic to create a health message
-                var result = _routerApplication.CreateHealthMessage();
-
-                // Map the result to the protocol buffer message
-                return Task.FromResult(new HealthMessageFromProto
-                {
-                    PrimaryId = result.PrimaryId,
-                    CurrectTime = result.CurrentTime
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in SendHealthMessage: {ex.Message}");
-                throw new RpcException(new Status(StatusCode.Internal, "Failed to send health message"));
-            }
+            return ListOfActiveClients;
         }
+        public override Task<Empty> AliveCheckMessage(HeartBeat heartBeat, ServerCallContext context)
+        {
+            string clientId = heartBeat.PrimaryId;
+            DateTime lastHeartbeat = DateTime.Parse(heartBeat.TimeCheck);
+
+            ListOfActiveClients.AddOrUpdate(
+                clientId,
+                lastHeartbeat,
+                (key, oldValue) => lastHeartbeat
+            );
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            int clientcount = ListOfActiveClients.Count;
+            Console.WriteLine($"There is/are {clientcount} client(s) Active connected to grpcServer");
+            Console.ResetColor();
+
+            foreach (var item in ListOfActiveClients)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"client number: {clientcount}  client id -> {item.Key} and lastheartbeat -> {item.Value}");
+                Console.ResetColor();
+            }
+
+
+            return Task.FromResult(new Empty());
+        }
+
+
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Common.Proto;
+using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using MPS.Application;
-using Grpc.Core;
 using MPS.Domian.Interfaces;
 using Grpc.Client.Services;
 
@@ -10,88 +10,91 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        // Create a builder for configuring the web application and its services
         var builder = WebApplication.CreateBuilder(args);
 
-        // Configure the gRPC client to connect to the server
-        // Only one address is used here (remove duplicate addresses)
+        // تنظیمات کلاینت gRPC
         builder.Services.AddGrpcClient<MessageExchange.MessageExchangeClient>(options =>
         {
-            options.Address = new Uri("https://localhost:7085"); // Replace with the correct server address
+            options.Address = new Uri("https://localhost:7085"); // آدرس سرور رو درست وارد کن
         });
 
-        // Register services for dependency injection
-        // These services will be used throughout the application :)
         builder.Services.AddTransient<IMessageProcessApplication, MessageProcessApplication>();
         builder.Services.AddTransient<IMessageProcessServiceImpl, MessageProcessServiceImpl>();
 
-        // Build the service provider to resolve registered services
         var provider = builder.Services.BuildServiceProvider();
-
-        // Resolve the message service from the service provider
         var messageService = provider.GetRequiredService<IMessageProcessServiceImpl>();
 
-        // Create a cancellation token source to handle graceful shutdown (e.g., Ctrl+C)
-        var cts = new CancellationTokenSource(); //with cntrl + c you can stop the program
-
-        // Register an event handler for Ctrl+C to cancel the operation
+        var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (sender, eventArgs) =>
         {
             Console.WriteLine("\nCancellation requested. Stopping...");
-            cts.Cancel(); // Trigger cancellation
-            eventArgs.Cancel = true; // Prevent the application from terminating immediately
+            cts.Cancel();
+            eventArgs.Cancel = true;
         };
+
+        bool isServerReady = false;
+        while (!isServerReady && !cts.Token.IsCancellationRequested)
+        {
+            try
+            {
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss} - Trying to connect to gRPC server...");
+                var testMessage = messageService.ReceiveDefaultMessage(); 
+                isServerReady = true; 
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Successfully connected to gRPC server!");
+                Console.ResetColor();
+            }
+            catch (RpcException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"{DateTime.Now:HH:mm:ss} - Waiting for server: {ex.Status.Detail}");
+                Console.ResetColor();
+                await Task.Delay(5000, cts.Token); 
+            }
+        }
 
         try
         {
-            // Main loop: Continuously send requests to the server every 200ms
-            while (!cts.Token.IsCancellationRequested) // Check if cancellation is requested
+            while (!cts.Token.IsCancellationRequested)
             {
                 try
                 {
-                    // Step 1: Receive a default message from the server
                     Console.WriteLine($"{DateTime.Now:HH:mm:ss} - Calling ReceiveDefaultMessageAsync...");
-                    var defaultMessage = messageService.ReceiveDefaultMessageAsync(); // Call the gRPc and get defualt message
+                    var defaultMessage = messageService.ReceiveDefaultMessage();
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"Message Received from Server:\n\tPrimaryId -> {defaultMessage.PrimaryId}\n\tSender -> {defaultMessage.Sender}\n\tMessageText -> {defaultMessage.MessageText}");
                     Console.ResetColor();
 
-                    // Step 2: Send the processed message back to the server
                     Console.WriteLine($"{DateTime.Now:HH:mm:ss} - Calling SendProcessedMessageAsync...");
-                    var result = messageService.SendProcessedMessageAsync(defaultMessage); // Call the gRPC method
+                    var result = messageService.SendProcessedMessage(defaultMessage);
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"Message Sent to Server:\n\tPrimaryId -> {result.MessageId}\n\tMessageLength -> {result.MessageLength}\n\tEngineType -> {result.EngineType}\n\tRegexFilter -> {result.RegexFilter}\n\tIsValid -> {result.IsValid}");
                     Console.ResetColor();
 
-                    // Wait for 300ms before sending the next request
-                    await Task.Delay(300, cts.Token); // wait 300 ms afgetr sending another
+                    await Task.Delay(300, cts.Token);
                 }
                 catch (RpcException ex)
                 {
-                    // Handle gRPC-specific errors (e.g., server unavailable, network issues)
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"{DateTime.Now:HH:mm:ss} - gRPC Error: {ex.Status.Detail}");
                     Console.ResetColor();
-                    await Task.Delay(5000, cts.Token); // Wait 5 seconds before retrying
+                    await Task.Delay(5000, cts.Token);
                 }
                 catch (Exception ex)
                 {
-                    // Handle any other unexpected errors
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"{DateTime.Now:HH:mm:ss} - General Error: {ex.Message}");
                     Console.ResetColor();
-                    await Task.Delay(5000, cts.Token); // Wait 5 secondss before retrying
+                    await Task.Delay(5000, cts.Token);
                 }
             }
         }
         catch (OperationCanceledException)
         {
-            // Handle the case where the operation is cancelled (e.g., Ctrl+C)
             Console.WriteLine("Operation was cancelled");
         }
         finally
         {
-            // Cleanup: This block runs when the application is shutting down
             Console.WriteLine("Application shutting down...");
         }
     }

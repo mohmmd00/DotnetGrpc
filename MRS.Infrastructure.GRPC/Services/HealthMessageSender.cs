@@ -1,66 +1,88 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json;
+using Common.Proto;
+using Google.Protobuf.WellKnownTypes;
 using MRS.Domain.Interfaces;
 
-public class HealthMessageSender : BackgroundService /*component to use in background tasks without user intraction*/
+namespace MRS.Infrastructure.Grpc.Services
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IHttpClientFactory _clientFactory;
-
-    public HealthMessageSender(IServiceProvider serviceProvider, IHttpClientFactory clientFactory)
+    public class HealthMessageSender : BackgroundService
     {
-        _serviceProvider = serviceProvider;
-        _clientFactory = clientFactory; // Use IHttpClientFactory for HttpClient management
-    }
+        private readonly HttpClient _httpClient;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly MessageRouterServiceImpl _messageRouterService;
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
+        public HealthMessageSender(HttpClient httpClient, IServiceProvider serviceProvider , MessageRouterServiceImpl service)
         {
-            try
+            _httpClient = httpClient;
+            _httpClient.BaseAddress = new Uri("https://localhost:7128/");
+            _serviceProvider = serviceProvider;
+            _messageRouterService = service;
+
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
             {
-                // Create a new scope to resolve scoped services
-                using (var scope = _serviceProvider.CreateScope())
+                try
                 {
-                    // Create an HttpClient instance using IHttpClientFactory
-                    var httpClient = _clientFactory.CreateClient(); // Properly use IHttpClientFactory here
-                    httpClient.BaseAddress = new Uri("https://localhost:7128/"); // Set BaseAddress explicitly to match webapi 
-
-
-
-
-
-                    var routerApplication = scope.ServiceProvider.GetRequiredService<IMessageRouterApplication>();
-
-                    // Call business logic to create a health message
-                    var result = routerApplication.CreateHealthMessage();
-
-                    // Prepare the data to send to the Web API
-                    var postData = new
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        PrimaryId = result.PrimaryId,
-                        CurrentTime = result.CurrentTime.ToString() // Serialize DateTime to string if needed
-                    };
-
-                    // Convert the data to JSON and send it as the body of the POST request
-                    var content = new StringContent(JsonSerializer.Serialize(postData), System.Text.Encoding.UTF8, "application/json");
 
 
+                        var messageRouterService = scope.ServiceProvider.GetRequiredService<MessageRouterServiceImpl>();
 
-                    // Make an HTTP POST request to the Web API
-                    var apiResponse = await httpClient.PostAsync("api/health", content);
-                    apiResponse.EnsureSuccessStatusCode(); // Throw exception if the request fails
-                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                    Console.WriteLine($"\nHealth message sent to Web API at {DateTime.UtcNow}\n");
-                    Console.ResetColor();
+                        //create a secondery dictionary to fetch all active clients from RouterServiceImpl
+                        var activeClients = messageRouterService.GetActiveClients();
+
+                        //create an onject taht holds the number of activeclients
+                        int activeClientCount = activeClients.Count((kv => (DateTime.UtcNow - kv.Value).TotalSeconds < 30));
+
+
+                        if (activeClientCount > 0)
+                        {
+                            foreach (var client in activeClients)
+                            {
+                                var postData = new
+                                {
+                                    PrimaryId = client.Key,
+                                    CurrentTime = client.Value,
+                                    ActiveClients = activeClientCount,
+                                };
+                                var content = new StringContent(JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
+                                var response = await _httpClient.PostAsync("api/health", content, stoppingToken);
+                                response.EnsureSuccessStatusCode();
+                            }
+                        }
+                        else
+                        {
+                            // در صورت صفر بودن کلاینت‌ها، یک درخواست POST ارسال می‌کنیم
+                            var postData = new
+                            {
+                                PrimaryId = "N/A",           // یا مقدار مناسب برای زمانی که کلاینتی وجود ندارد
+                                CurrentTime = DateTime.UtcNow,
+                                ActiveClients = activeClientCount,
+                            };
+                            var content = new StringContent(JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
+                            var response = await _httpClient.PostAsync("api/health", content, stoppingToken);
+                            response.EnsureSuccessStatusCode();
+                        }
+
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Health message sent with {activeClientCount} active clients");
+                        Console.ResetColor();
+
+
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending health message: {ex.Message}");
+                }
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending health message: {ex.Message}");
-            }
-
-            // Wait for 30 seconds before sending the next health message
-            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
     }
 }

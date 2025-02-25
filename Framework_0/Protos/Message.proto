@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 service MessageExchange {
     rpc SendDefaultMessage (google.protobuf.Empty) returns (MessageFromproto);
     rpc ReceiveProcessedMessage (ProcessedMessageFromproto) returns (google.protobuf.Empty);
-    rpc SendHealthMessage(google.protobuf.Empty) returns (HealthMessageFromProto);
+    rpc AliveCheckMessage(HeartBeat) returns (google.protobuf.Empty);
 }
 
 message MessageFromproto {
@@ -22,7 +22,7 @@ message ProcessedMessageFromproto {
     int32 messageLength = 4; 
     map<string, string> regexFilter = 5;
 }
-message  HealthMessageFromProto{
-    string primaryId =1;
-    string CurrectTime =2;
+message HeartBeat{
+    string primaryId = 1;
+    string timeCheck =2;
 }

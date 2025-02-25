@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Framework_0.CustomLoggingService;
+using Microsoft.AspNetCore.Mvc;
 using MMS.Domain.Entities;
 
 namespace MMS.Presentation.Api.Controllers
@@ -7,6 +8,13 @@ namespace MMS.Presentation.Api.Controllers
     [Route("api/[controller]")]
     public class HealthController : ControllerBase
     {
+        private readonly ILoggingService _loggingService;
+
+        public HealthController(ILoggingService loggingService)
+        {
+            _loggingService = loggingService;
+        }
+
         // POST: api/health
         [HttpPost]
         public IActionResult Post([FromBody] MMSMessage message)
@@ -16,17 +24,10 @@ namespace MMS.Presentation.Api.Controllers
                 return BadRequest("Invalid health message data.");
             }
 
-            // Process the received health message (e.g., log it or update system status)
-            LogHealthMessage(message);
-
+            // Process the received health message ( log it or update system status) loged it by defualt :)
+            _loggingService.HealthMessageReceivedFromRouterByApi(message.PrimaryId, message.CurrentTime , message.ActiveClients);
+           
             return Ok(new { Status = "Success", Message = "Health message received." });
-        }
-
-        private void LogHealthMessage(MMSMessage message)
-        {
-            // Example: Logging the received health message
-            Console.WriteLine($"Health Message Received - PrimaryId: {message.PrimaryId}, CurrentTime: {message.CurrentTime}");
-            // You can also save this data to a database or perform other actions here
         }
     }
 }

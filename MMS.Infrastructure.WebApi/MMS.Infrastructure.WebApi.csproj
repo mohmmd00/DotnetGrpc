@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -11,7 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Framework_0\Framework_0.csproj" />
     <ProjectReference Include="..\MMS.Domain\MMS.Domain.csproj" />
+    <ProjectReference Include="..\MRS.Infrastructure.Grpc\MRS.Infrastructure.Grpc.csproj" />
   </ItemGroup>
 
 </Project>

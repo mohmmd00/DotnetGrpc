@@ -6,12 +6,6 @@ namespace MPS.Application
 {
     public class MessageProcessApplication : IMessageProcessApplication
     {
-        private readonly IProcessLoggingService _loggingService;
-
-        public MessageProcessApplication(IProcessLoggingService loggingService)
-        {
-            _loggingService = loggingService;
-        }
         public MPSProcessedMessage ProcessMessage(MPSMessage message)
         {
 

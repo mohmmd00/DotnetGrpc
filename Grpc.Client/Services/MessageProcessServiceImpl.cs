@@ -17,18 +17,21 @@ namespace Grpc.Client.Services
             _client = client;
         }
 
-        public MPSMessage ReceiveDefaultMessageAsync()
+        public MPSMessage ReceiveDefaultMessage()
         {
 
             Empty Nothing = new Empty();
 
-            var receivedmessage = _client.SendDefaultMessage(Nothing);
 
+            var receivedmessage = _client.SendDefaultMessage(Nothing);
+            var heartbeat = new HeartBeat() { PrimaryId = receivedmessage.PrimaryId,TimeCheck = DateTime.Now.ToString() };
+            _client.AliveCheckMessage(heartbeat);
 
             MPSMessage mPSMessage = new MPSMessage(receivedmessage.PrimaryId, receivedmessage.Sender, receivedmessage.MessageText);
+
             return mPSMessage;
         }
-        public ProcessedMessageFromproto SendProcessedMessageAsync(MPSMessage mpsMessage)
+        public ProcessedMessageFromproto SendProcessedMessage(MPSMessage mpsMessage)
 
         {
             var result = _application.ProcessMessage(mpsMessage);
