@@ -7,9 +7,9 @@ namespace MRS.Infrastructure.Grpc.Services
 {
     public interface IMessageRouterServiceImpl
     {
-        Task<MessageFromproto> SendDefaultMessage(Empty request, ServerCallContext context);
+        Task<MessageFromproto> SendMessage(IntroduceMessageFromProto message, ServerCallContext context);
         Task<Empty> ReceiveProcessedMessage(ProcessedMessageFromproto message, ServerCallContext context);
         Task<Empty> AliveCheckMessage(HeartBeat heartBeat, ServerCallContext context);
-         ConcurrentDictionary<string, DateTime> GetActiveClients();
+         ConcurrentDictionary<string, DateTime> FetchActiveClientsToList();
     }
 }

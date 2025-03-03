@@ -9,7 +9,7 @@ using System.Collections.Concurrent;
 
 namespace MRS.Infrastructure.Grpc.Services
 {
-    public class MessageRouterServiceImpl : MessageExchange.MessageExchangeBase, IMessageRouterServiceImpl
+    public class MessageRouterServiceImpl : MessageExchange.MessageExchangeBase,IMessageRouterServiceImpl
     {
         private readonly IMessageRouterApplication _routerApplication;
         private readonly HttpClient _httpClient;
@@ -17,13 +17,7 @@ namespace MRS.Infrastructure.Grpc.Services
 
 
 
-
-
-
-        public ConcurrentDictionary<string, DateTime> ListOfActiveClients = new();
-
-
-
+        public ConcurrentDictionary<string, DateTime> ListOfActiveClients = new(); // create a cuncurrect dictionary fort keeping active clients 
 
 
 
@@ -34,13 +28,12 @@ namespace MRS.Infrastructure.Grpc.Services
             _httpClient.BaseAddress = new Uri("https://localhost:7128");
             _loggingService = loggingService;
         }
-
-        public override Task<MessageFromproto> SendDefaultMessage(Empty request, ServerCallContext context)
+        public override Task<MessageFromproto> SendMessage(IntroduceMessageFromProto message, ServerCallContext context)
         {
-            var result = _routerApplication.CreateMessage();
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($"Message Sent to Client:\n\tPrimaryId -> {result.PrimaryId}\n\tSender -> {result.Sender}\n\tMessageText -> {result.MessageText}");
-            Console.ResetColor();
+
+            /*gets the intro messaqge thgen send a message from proto*/
+
+            var result = _routerApplication.CreateMessage(message.PrimaryId); // send received id from client to application layer for creating a message and sender based on client mac adderss 
 
             return Task.FromResult(new MessageFromproto
             {
@@ -54,44 +47,29 @@ namespace MRS.Infrastructure.Grpc.Services
         {
             var processed = new MRSProcessedMessage
             {
-                MessageId = message.MessageId,
+                MessageId = message.PrimaryId,
                 EngineType = message.EngineType,
                 IsValid = message.IsValid,
                 MessageLength = message.MessageLength
             };
-            _loggingService.ProcessedMessageReceivedFromProcessByRouterToLog(processed.MessageId, processed.EngineType, processed.IsValid, processed.MessageLength);
+            _loggingService.ProcessedMessageReceivedByRouterFromProcessToLog(processed.MessageId, processed.EngineType, processed.IsValid, processed.MessageLength);
 
             return Task.FromResult(new Empty());
         }
 
-        public ConcurrentDictionary<string, DateTime> GetActiveClients()
-        {
-            return ListOfActiveClients;
-        }
+
         public override Task<Empty> AliveCheckMessage(HeartBeat heartBeat, ServerCallContext context)
         {
+
+            /*every time a clinet sends a heartbeat this function add it to concurrentdictionary */
             string clientId = heartBeat.PrimaryId;
-            DateTime lastHeartbeat = DateTime.Parse(heartBeat.TimeCheck);
+            DateTime lastHeartbeat = DateTime.Parse(heartBeat.TimeCheck);// because time is string we need toi parse it 
 
             ListOfActiveClients.AddOrUpdate(
                 clientId,
                 lastHeartbeat,
                 (key, oldValue) => lastHeartbeat
             );
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            int clientcount = ListOfActiveClients.Count;
-            Console.WriteLine($"There is/are {clientcount} client(s) Active connected to grpcServer");
-            Console.ResetColor();
-
-            foreach (var item in ListOfActiveClients)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"client number: {clientcount}  client id -> {item.Key} and lastheartbeat -> {item.Value}");
-                Console.ResetColor();
-            }
-
-
             return Task.FromResult(new Empty());
         }
 

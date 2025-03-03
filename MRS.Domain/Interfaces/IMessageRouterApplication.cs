@@ -4,8 +4,8 @@ namespace MRS.Domain.Interfaces
 {
     public interface IMessageRouterApplication
     {
-        MRSMessage CreateMessage();
-        MRSHealthMessage CreateHealthMessage();
+        MRSMessage CreateMessage(string primaryId);
+        MRSHealthMessage CreateHealthMessage(string primaryId);
 
     }
 }

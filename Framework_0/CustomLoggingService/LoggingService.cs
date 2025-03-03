@@ -10,14 +10,14 @@ namespace Framework_0.CustomLoggingService
             _logger = logger;
         }
 
-        public void HealthMessageReceivedFromRouterByApi(string? primaryId, string? currentTime , int activeClient)
+        public void HealthMessageReceivedByApiFromRouterToLog(string? primaryId, string? currentTime , int activeClient)
         {
             _logger.LogInformation($"Health Message Received - PrimaryId: {primaryId}, CurrentTime: {currentTime}, ActiveClients: {activeClient}");
         }
 
-        public void ProcessedMessageReceivedFromProcessByRouterToLog(string? primaryId, string? engineType, bool isValid, int? messageLength)
+        public void ProcessedMessageReceivedByRouterFromProcessToLog(string? primaryId, string? engineType, bool isValid, int? messageLength)
         {
-            if (isValid) // Simplified condition (no need for == true)
+            if (isValid)
             {
                 _logger.LogInformation($"Message Received from Client:\n\tPrimaryId -> {primaryId}\n\tMessageLength -> {messageLength}\n\tEngineType -> {engineType}\n\tIsValid -> {isValid}");
             }

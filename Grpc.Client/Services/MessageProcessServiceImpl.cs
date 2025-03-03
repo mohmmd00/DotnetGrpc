@@ -1,8 +1,6 @@
 ﻿using Common.Proto;
-using Google.Protobuf.WellKnownTypes;
 using MPS.Domian.Entities;
 using MPS.Domian.Interfaces;
-
 namespace Grpc.Client.Services
 {
     public class MessageProcessServiceImpl : MessageExchange.MessageExchangeClient, IMessageProcessServiceImpl
@@ -19,13 +17,22 @@ namespace Grpc.Client.Services
 
         public MPSMessage ReceiveDefaultMessage()
         {
+            var systemId =_application.GenerateSystemGuid().ToString();
+            var Introductionmessage = new IntroduceMessageFromProto()
+            {
+                PrimaryId = systemId,
+                EngineType = "RegexEngine"
+            };
+            var receivedmessage = _client.SendMessage(Introductionmessage);
+            var heartbeat = new HeartBeat() 
+            { 
+                PrimaryId = receivedmessage.PrimaryId,
+                TimeCheck = DateTime.Now.ToString() 
+            };
+                                                    // send a heartbeat so grpc server unsures
+            _client.AliveCheckMessage(heartbeat);   // that client is alive every time client asks for new message to processs
+                                                    // i dont know why i need this but ok 
 
-            Empty Nothing = new Empty();
-
-
-            var receivedmessage = _client.SendDefaultMessage(Nothing);
-            var heartbeat = new HeartBeat() { PrimaryId = receivedmessage.PrimaryId,TimeCheck = DateTime.Now.ToString() };
-            _client.AliveCheckMessage(heartbeat);
 
             MPSMessage mPSMessage = new MPSMessage(receivedmessage.PrimaryId, receivedmessage.Sender, receivedmessage.MessageText);
 
@@ -38,11 +45,11 @@ namespace Grpc.Client.Services
 
             var ProtoProcessedMessage = new ProcessedMessageFromproto
             {
-                MessageId = result.MessageId,
+                PrimaryId = result.MessageId,
                 MessageLength = result.MessageLength,
                 EngineType = result.EngineType,
                 IsValid = result.IsValid,
-                // must bew created later its just a fixed data !!!
+                // engine type must bew created later its just a blank data !!!
             };
 
             _client.ReceiveProcessedMessage(ProtoProcessedMessage);

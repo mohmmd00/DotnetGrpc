@@ -1,6 +1,0 @@
-@ManagementSystem_HostAddress = https://localhost:7085
-
-GET {{ManagementSystem_HostAddress}}/Health/
-Accept: application/json
-
-###

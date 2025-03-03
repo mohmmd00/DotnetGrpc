@@ -20,6 +20,7 @@ namespace MMS.Infrastructure.WebApi
 
             var app = builder.Build();
 
+            app.UseAuthorization();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -29,7 +30,6 @@ namespace MMS.Infrastructure.WebApi
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
 
 
             app.MapControllers();

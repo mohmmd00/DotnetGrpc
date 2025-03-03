@@ -1,6 +1,0 @@
-@MMS.Presentation.Api_HostAddress = http://localhost:5168
-
-GET {{MMS.Presentation.Api_HostAddress}}/HealthCheck/
-Accept: application/json
-
-###

@@ -17,14 +17,14 @@ namespace MRS.Infrastructure.Grpc
             builder.Services.AddHttpClient();
 
             // Add services to the container
-            builder.Services.AddTransient<ILoggingService, LoggingService>();
-            builder.Services.AddTransient<IMessageRouterApplication, MessageRouterApplication>();
+            builder.Services.AddTransient<ILoggingService, LoggingService>(); // add loggin service
+            builder.Services.AddTransient<IMessageRouterApplication, MessageRouterApplication>(); // add application service
 
             // Register MessageRouterServiceImpl as a transient service
-            builder.Services.AddSingleton<MessageRouterServiceImpl>();
+            builder.Services.AddSingleton<MessageRouterServiceImpl>(); // add router service as singleton -- so background service be able to use scopefactory ...
 
             // Add the HealthMessageSender hosted service
-            builder.Services.AddHostedService<HealthMessageSender>();
+            builder.Services.AddHostedService<HealthMessageSender>(); // add background service
 
             var app = builder.Build();
 

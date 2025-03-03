@@ -4,11 +4,16 @@ option csharp_namespace = "Common.Proto";
 import "google/protobuf/empty.proto";
 
 service MessageExchange {
-    rpc SendDefaultMessage (google.protobuf.Empty) returns (MessageFromproto);
+    rpc SendMessage (IntroduceMessageFromProto) returns (MessageFromproto);
     rpc ReceiveProcessedMessage (ProcessedMessageFromproto) returns (google.protobuf.Empty);
     rpc AliveCheckMessage(HeartBeat) returns (google.protobuf.Empty);
 }
 
+
+message IntroduceMessageFromProto  {
+    string primaryId = 1;
+    string engineType = 2;
+}
 message MessageFromproto {
     string primaryId = 1;
     string sender = 2;    
@@ -16,7 +21,7 @@ message MessageFromproto {
 }
 
 message ProcessedMessageFromproto {
-    string messageId = 1;
+    string primaryId = 1;
     bool isValid = 2;     
     string engineType = 3; 
     int32 messageLength = 4; 
